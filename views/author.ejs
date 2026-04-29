@@ -21,6 +21,27 @@
     <a class="back" href="/">← Back to all recipes</a>
 
     <h1><%= author %></h1>
+
+    <% if (stats) { %>
+      <div style="display:flex; gap:12px; flex-wrap:wrap; margin-bottom:24px;">
+        <div style="background:#F8FFFE; border:1px solid #9FE1CB; border-radius:8px; padding:14px 20px; text-align:center; min-width:100px;">
+          <div style="font-size:24px; font-weight:bold; color:#1D9E75;"><%= stats.total_recipes %></div>
+          <div style="font-size:12px; color:#888; margin-top:2px;">Recipes</div>
+        </div>
+        <div style="background:#F8FFFE; border:1px solid #9FE1CB; border-radius:8px; padding:14px 20px; text-align:center; min-width:100px;">
+          <div style="font-size:24px; font-weight:bold; color:#EF9F27;">★ <%= stats.avg_rating.toFixed(1) %></div>
+          <div style="font-size:12px; color:#888; margin-top:2px;">Avg Rating</div>
+        </div>
+        <div style="background:#F8FFFE; border:1px solid #9FE1CB; border-radius:8px; padding:14px 20px; min-width:160px;">
+          <div style="font-size:12px; color:#888; margin-bottom:6px;">Categories</div>
+          <div>
+            <% stats.categories.forEach(cat => { %>
+              <span style="display:inline-block; background:#E1F5EE; color:#0F6E56; padding:2px 10px; border-radius:20px; font-size:12px; margin-right:4px;"><%= cat %></span>
+            <% }) %>
+          </div>
+        </div>
+      </div>
+    <% } %>
     <p><strong><%= recipes.length %></strong> recipe(s) by this author</p>
 
     <% if (recipes.length === 0) { %>

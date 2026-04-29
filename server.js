@@ -74,26 +74,14 @@ app.set("views", path.join(__dirname, "views"));
 
 app.get("/", async (req, res) => {
   try {
-    const { category, tag } = req.query;
-    const filter = {};
-
-    if (category) filter.category = category;
-    if (tag) {
-      const tagsArray = tag.split(",").map(t => t.trim()).filter(t => t);
-      filter.tags = tagsArray.length > 1
-        ? { $all: tagsArray }
-        : tagsArray[0];
-    }
-
     const recipes = await recipesCollection
-      .find(filter)
+      .find()
       .sort({ rating: -1 })
+      .limit(10)
       .toArray();
 
     res.render("index", {
       recipes,
-      selectedCategory: category || "",
-      selectedTag: tag || "",
       success: req.query.success
     });
   } catch (error) {
@@ -263,12 +251,25 @@ app.get("/recipes/:id", async (req, res) => {
 app.get("/authors/:author", async (req, res) => {
   try {
     const author = req.params.author;
+
     const recipes = await recipesCollection
-      .find({ author: author })
+      .find({ author })
       .sort({ rating: -1 })
       .toArray();
 
-    res.render("author", { author, recipes });
+    const statsResult = await recipesCollection.aggregate([
+      { $match: { author } },
+      { $group: {
+          _id: "$author",
+          total_recipes: { $sum: 1 },
+          avg_rating: { $avg: "$rating" },
+          categories: { $addToSet: "$category" }
+      }}
+    ]).toArray();
+
+    const stats = statsResult[0] || null;
+
+    res.render("author", { author, recipes, stats });
   } catch (error) {
     console.error("Error loading author:", error);
     res.status(500).send("Could not load author.");

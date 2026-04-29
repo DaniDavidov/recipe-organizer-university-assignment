@@ -50,39 +50,12 @@
         · <a href="/recipes/search">Advanced Search</a>
     </div>
     </nav>
-    <h1>Recipe Organizer</h1>
-    <p>Connected to MongoDB · <strong><%= recipes.length %></strong> recipes</p>
 
     <% if (typeof success !== 'undefined' && success) { %>
       <div class="success">Recipe added successfully!</div>
     <% } %>
 
-    <!-- FILTERS -->
-    <form method="GET" action="/">
-      <div class="filters">
-        <div>
-          <label>Category</label>
-          <select name="category">
-            <option value="">All categories</option>
-            <% ["main","dessert","salad","soup","breakfast"].forEach(cat => { %>
-              <option value="<%= cat %>" <%= selectedCategory === cat ? 'selected' : '' %>><%= cat %></option>
-            <% }) %>
-          </select>
-        </div>
-        <div>
-          <label>Tag</label>
-          <input type="text" name="tag" placeholder="e.g. vegan" value="<%= selectedTag || '' %>"/>
-        </div>
-        <div>
-          <label>&nbsp;</label>
-          <button type="submit">Filter</button>
-        </div>
-        <div>
-          <label>&nbsp;</label>
-          <button type="button" class="reset" onclick="window.location='/'">Reset</button>
-        </div>
-      </div>
-    </form>
+    <h1>Top 10 recipes</h1>
 
     <!-- RECIPE LIST -->
     <% if (recipes.length === 0) { %>
