@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Register - Recipe Organizer</title>
+    <style>
+      body { font-family: Arial, sans-serif; max-width: 400px; margin: 80px auto; padding: 0 16px; }
+      h1 { color: #1D9E75; }
+      a { color: #1D9E75; text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      .form-group { display: flex; flex-direction: column; gap: 4px; margin-bottom: 16px; }
+      .form-group label { font-size: 13px; color: #555; }
+      .form-group input { padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+      .form-group input:focus { outline: none; border-color: #1D9E75; }
+      .btn { width: 100%; padding: 10px; background: #1D9E75; color: white; border: none; border-radius: 6px; font-size: 15px; cursor: pointer; margin-top: 8px; }
+      .btn:hover { background: #0F6E56; }
+      .error { background: #FCEBEB; color: #A32D2D; padding: 10px 14px; border-radius: 6px; font-size: 13px; margin-bottom: 16px; }
+      .footer { text-align: center; margin-top: 20px; font-size: 13px; color: #888; }
+    </style>
+  </head>
+  <body>
+    <h1>Register</h1>
+
+    <% if (error) { %>
+      <div class="error"><%= error %></div>
+    <% } %>
+
+    <form method="POST" action="/register">
+      <div class="form-group">
+        <label>Username</label>
+        <input type="text" name="username" required placeholder="Your name" />
+      </div>
+      <div class="form-group">
+        <label>Email</label>
+        <input type="email" name="email" required placeholder="your@email.com" />
+      </div>
+      <div class="form-group">
+        <label>Password</label>
+        <input type="password" name="password" required placeholder="••••••••" minlength="6" />
+      </div>
+      <button type="submit" class="btn">Create account</button>
+    </form>
+
+    <div class="footer">
+      Already have an account? <a href="/login">Log in</a>
+    </div>
+  </body>
+</html>
