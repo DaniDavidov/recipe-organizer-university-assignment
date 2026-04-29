@@ -29,6 +29,30 @@ const db = client.db(DB_NAME);
 const recipesCollection = db.collection("recipes");
 const usersCollection = db.collection("users");
 
+// Create indexes
+await recipesCollection.createIndex(
+  { tags: 1 },
+  { name: "tags_index" }
+);
+await recipesCollection.createIndex(
+  { "ingredients.name": 1 },
+  { name: "ingredients_name_index" }
+);
+await recipesCollection.createIndex(
+  { category: 1, difficulty: 1 },
+  { name: "category_difficulty_index" }
+);
+await recipesCollection.createIndex(
+  { rating: -1 },
+  { name: "rating_desc_index" }
+);
+await usersCollection.createIndex(
+  { username: 1 },
+  { unique: true, name: "username_unique_index" }
+);
+
+console.log("Indexes ensured.");
+
 const app = express();
 
 app.use(cors());
@@ -54,7 +78,12 @@ app.get("/", async (req, res) => {
     const filter = {};
 
     if (category) filter.category = category;
-    if (tag) filter.tags = tag;
+    if (tag) {
+      const tagsArray = tag.split(",").map(t => t.trim()).filter(t => t);
+      filter.tags = tagsArray.length > 1
+        ? { $all: tagsArray }
+        : tagsArray[0];
+    }
 
     const recipes = await recipesCollection
       .find(filter)
@@ -154,6 +183,58 @@ app.post("/login", async (req, res) => {
 app.get("/logout", (req, res) => {
   req.session.destroy();
   res.redirect("/");
+});
+
+app.get("/recipes/search", async (req, res) => {
+  try {
+    const { ingredient, dietary, tags, author, category } = req.query;
+    const filter = {};
+
+    if (ingredient) {
+      const ingredientArray = ingredient.split(",").map(i => i.trim()).filter(i => i);
+      if (ingredientArray.length > 1) {
+        filter["ingredients.name"] = { $all: ingredientArray };
+      } else {
+        filter.ingredients = {
+          $elemMatch: { name: ingredientArray[0] }
+        };
+      }
+    }
+
+    if (dietary) {
+      const dietaryArray = dietary.split(",").map(d => d.trim()).filter(d => d);
+      if (dietaryArray.length > 0) {
+        filter.dietary = { $all: dietaryArray };
+      }
+    }
+
+    if (tags) {
+      const tagsArray = tags.split(",").map(t => t.trim()).filter(t => t);
+      if (tagsArray.length > 0) {
+        filter.tags = { $in: tagsArray };
+      }
+    }
+
+    if (author) filter.author = author;
+    if (category) filter.category = category;
+
+    const recipes = await recipesCollection
+      .find(filter)
+      .sort({ rating: -1 })
+      .toArray();
+
+    res.render("search", {
+      recipes,
+      ingredient: ingredient || "",
+      dietary: dietary || "",
+      tags: tags || "",
+      author: author || "",
+      category: category || ""
+    });
+  } catch (error) {
+    console.error("Error searching recipes:", error);
+    res.status(500).send("Could not search recipes.");
+  }
 });
 
 app.get("/recipes/new", (req, res) => {
