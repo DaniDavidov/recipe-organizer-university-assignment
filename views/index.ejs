@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Recipe Organizer</title>
+    <style>
+      body { font-family: Arial, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 16px; }
+      h1 { color: #1D9E75; }
+      h2 { color: #333; margin-top: 32px; }
+      a { color: #1D9E75; text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      .recipe { border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin-bottom: 16px; }
+      .recipe h3 { margin: 0 0 8px 0; }
+      .tag { display: inline-block; background: #E1F5EE; color: #0F6E56; padding: 2px 10px; border-radius: 20px; font-size: 12px; margin-right: 4px; }
+      .meta { color: #888; font-size: 13px; margin-bottom: 8px; }
+      .rating { color: #EF9F27; font-weight: bold; }
+
+      .filters { display: flex; gap: 12px; margin-bottom: 24px; flex-wrap: wrap; align-items: flex-end; }
+      .filters label { font-size: 13px; color: #555; display: block; margin-bottom: 4px; }
+      .filters select, .filters input { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+      .filters button { padding: 8px 16px; background: #1D9E75; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; }
+      .filters button:hover { background: #0F6E56; }
+      .filters .reset { background: none; color: #888; border: 1px solid #ddd; }
+      .filters .reset:hover { background: #f5f5f5; }
+
+      .add-form { background: #F8FFFE; border: 1px solid #9FE1CB; border-radius: 8px; padding: 20px; margin-bottom: 32px; }
+      .add-form h2 { margin-top: 0; color: #1D9E75; }
+      .form-row { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+      .form-group { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 160px; }
+      .form-group label { font-size: 13px; color: #555; }
+      .form-group input, .form-group select { padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; }
+      .submit-btn { padding: 10px 24px; background: #1D9E75; color: white; border: none; border-radius: 6px; font-size: 14px; cursor: pointer; margin-top: 8px; }
+      .submit-btn:hover { background: #0F6E56; }
+      .success { background: #E1F5EE; color: #0F6E56; padding: 10px 16px; border-radius: 6px; margin-bottom: 16px; font-size: 14px; }
+    </style>
+  </head>
+  <body>
+    <nav style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; padding-bottom:16px; border-bottom:1px solid #eee;">
+    <strong style="color:#1D9E75; font-size:18px;">Recipe Organizer</strong>
+    <div style="font-size:14px; display:flex; gap:12px; align-items:center;">
+        <% if (user) { %>
+        <a href="/recipes/new" style="background:#1D9E75; color:white; padding:6px 14px; border-radius:6px;">+ Add Recipe</a>
+        Wellcome, <strong><%= user.username %></strong> ·
+        <a href="/logout">Logout</a>
+        <% } else { %>
+        <a href="/login">Login</a> ·
+        <a href="/register">Register</a>
+        <% } %>
+    </div>
+    </nav>
+    <h1>Recipe Organizer</h1>
+    <p>Connected to MongoDB · <strong><%= recipes.length %></strong> recipes</p>
+
+    <% if (typeof success !== 'undefined' && success) { %>
+      <div class="success">Recipe added successfully!</div>
+    <% } %>
+
+    <!-- FILTERS -->
+    <form method="GET" action="/">
+      <div class="filters">
+        <div>
+          <label>Category</label>
+          <select name="category">
+            <option value="">All categories</option>
+            <% ["main","dessert","salad","soup","breakfast"].forEach(cat => { %>
+              <option value="<%= cat %>" <%= selectedCategory === cat ? 'selected' : '' %>><%= cat %></option>
+            <% }) %>
+          </select>
+        </div>
+        <div>
+          <label>Tag</label>
+          <input type="text" name="tag" placeholder="e.g. vegan" value="<%= selectedTag || '' %>"/>
+        </div>
+        <div>
+          <label>&nbsp;</label>
+          <button type="submit">Filter</button>
+        </div>
+        <div>
+          <label>&nbsp;</label>
+          <button type="button" class="reset" onclick="window.location='/'">Reset</button>
+        </div>
+      </div>
+    </form>
+
+    <!-- RECIPE LIST -->
+    <% if (recipes.length === 0) { %>
+      <p>No recipes found.</p>
+    <% } %>
+
+    <% recipes.forEach((recipe) => { %>
+      <div class="recipe">
+        <h3><a href="/recipes/<%= recipe._id %>"><%= recipe.title %></a></h3>
+        <div class="meta">
+          Category: <strong><%= recipe.category %></strong> ·
+          Difficulty: <strong><%= recipe.difficulty %></strong> ·
+          <span class="rating">★ <%= recipe.rating %></span> ·
+          Author: <a href="/authors/<%= encodeURIComponent(recipe.author) %>"><%= recipe.author %></a>
+        </div>
+        <div>
+          <% (recipe.tags || []).forEach((tag) => { %>
+            <span class="tag"><%= tag %></span>
+          <% }) %>
+        </div>
+      </div>
+    <% }) %>
+  </body>
+</html>
