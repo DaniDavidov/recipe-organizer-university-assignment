@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Search - Recipe Organizer</title>
+    <style>
+      body { font-family: Arial, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 16px; }
+      h1 { color: #1D9E75; }
+      a { color: #1D9E75; text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      nav { display:flex; justify-content:space-between; align-items:center; margin-bottom:24px; padding-bottom:16px; border-bottom:1px solid #eee; }
+      .search-box { background:#F8FFFE; border:1px solid #9FE1CB; border-radius:8px; padding:20px; margin-bottom:24px; }
+      .search-box h2 { color:#1D9E75; margin-top:0; font-size:16px; }
+      .section-title { font-size:12px; font-weight:bold; color:#1D9E75; text-transform:uppercase; letter-spacing:.05em; margin:16px 0 8px; }
+      .form-row { display:flex; gap:12px; flex-wrap:wrap; }
+      .form-group { display:flex; flex-direction:column; gap:4px; flex:1; min-width:160px; }
+      .form-group label { font-size:13px; color:#555; }
+      .form-group input, .form-group select { padding:8px 12px; border:1px solid #ddd; border-radius:6px; font-size:14px; }
+      .hint { font-size:11px; color:#aaa; margin-top:2px; }
+      .btn-row { display:flex; gap:8px; margin-top:16px; }
+      .btn { padding:8px 20px; background:#1D9E75; color:white; border:none; border-radius:6px; font-size:14px; cursor:pointer; }
+      .btn:hover { background:#0F6E56; }
+      .btn-reset { background:none; color:#888; border:1px solid #ddd; }
+      .btn-reset:hover { background:#f5f5f5; }
+      .results-info { font-size:14px; color:#555; margin-bottom:16px; padding:10px 14px; background:#F0F0F0; border-radius:6px; }
+      .recipe { border:1px solid #ddd; border-radius:8px; padding:16px; margin-bottom:16px; }
+      .recipe h3 { margin:0 0 8px 0; }
+      .tag { display:inline-block; background:#E1F5EE; color:#0F6E56; padding:2px 10px; border-radius:20px; font-size:12px; margin-right:4px; }
+      .meta { color:#888; font-size:13px; margin-bottom:8px; }
+      .rating { color:#EF9F27; font-weight:bold; }
+      .operator-badge { display:inline-block; font-size:11px; padding:1px 8px; border-radius:20px; margin-left:6px; background:#FAEEDA; color:#854F0B; font-family: monospace; }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <strong style="color:#1D9E75; font-size:18px;">Recipe Organizer</strong>
+      <div style="font-size:14px; display:flex; gap:12px; align-items:center;">
+        <% if (user) { %>
+          <a href="/recipes/new" style="background:#1D9E75;color:white;padding:6px 14px;border-radius:6px;">+ Add Recipe</a>
+          Здравей, <strong><%= user.username %></strong> ·
+          <a href="/logout">Logout</a> ·
+        <% } else { %>
+          <a href="/login">Login</a> ·
+          <a href="/register">Register</a> ·
+        <% } %>
+        <a href="/">Home</a>
+      </div>
+    </nav>
+
+    <h1>Advanced Search</h1>
+
+    <form method="GET" action="/recipes/search">
+      <div class="search-box">
+
+        <div class="section-title">By Ingredient <span class="operator-badge">$elemMatch</span></div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Ingredient name</label>
+            <input type="text" name="ingredient" placeholder="e.g. flour" value="<%= ingredient %>" />
+            <span class="hint">One or more ingredients, comma separated - recipe must contain ALL</span>
+          </div>
+        </div>
+
+        <div class="section-title">By Dietary <span class="operator-badge">$all</span></div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Dietary restrictions</label>
+            <input type="text" name="dietary" placeholder="e.g. vegan, gluten-free" value="<%= dietary %>" />
+            <span class="hint">Comma separated - recipe must match ALL</span>
+          </div>
+        </div>
+
+        <div class="section-title">By Tags <span class="operator-badge">$in</span></div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Tags</label>
+            <input type="text" name="tags" placeholder="e.g. quick, summer, healthy" value="<%= tags %>" />
+            <span class="hint">Comma separated - recipe must match AT LEAST ONE</span>
+          </div>
+        </div>
+
+        <div class="section-title">By Author & Category</div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Author</label>
+            <input type="text" name="author" placeholder="e.g. Maria Ivanova" value="<%= author %>" />
+          </div>
+          <div class="form-group">
+            <label>Category</label>
+            <select name="category">
+              <option value="">All categories</option>
+              <% ["main","dessert","salad","soup","breakfast"].forEach(cat => { %>
+                <option value="<%= cat %>" <%= category === cat ? 'selected' : '' %>><%= cat %></option>
+              <% }) %>
+            </select>
+          </div>
+        </div>
+
+        <div class="btn-row">
+          <button type="submit" class="btn">Search</button>
+          <button type="button" class="btn btn-reset" onclick="window.location='/recipes/search'">Reset</button>
+        </div>
+      </div>
+    </form>
+
+    <% const hasSearch = ingredient || dietary || tags || author || category; %>
+
+    <% if (hasSearch) { %>
+      <div class="results-info">
+        Found <strong><%= recipes.length %></strong> recipe(s)
+        <% if (ingredient) { %> · ingredient: <strong><%= ingredient %></strong> <span class="operator-badge">$elemMatch</span><% } %>
+        <% if (dietary) { %> · dietary: <strong><%= dietary %></strong> <span class="operator-badge">$all</span><% } %>
+        <% if (tags) { %> · tags: <strong><%= tags %></strong> <span class="operator-badge">$in</span><% } %>
+        <% if (author) { %> · author: <strong><%= author %></strong><% } %>
+        <% if (category) { %> · category: <strong><%= category %></strong><% } %>
+      </div>
+    <% } %>
+
+    <% if (recipes.length === 0 && hasSearch) { %>
+      <p>No recipes found for these criteria.</p>
+    <% } %>
+
+    <% recipes.forEach((recipe) => { %>
+      <div class="recipe">
+        <h3><a href="/recipes/<%= recipe._id %>"><%= recipe.title %></a></h3>
+        <div class="meta">
+          Category: <strong><%= recipe.category %></strong> ·
+          Difficulty: <strong><%= recipe.difficulty %></strong> ·
+          <span class="rating">★ <%= recipe.rating %></span> ·
+          Author: <a href="/authors/<%= encodeURIComponent(recipe.author) %>"><%= recipe.author %></a>
+        </div>
+        <div>
+          <% (recipe.tags || []).forEach((tag) => { %>
+            <span class="tag"><%= tag %></span>
+          <% }) %>
+        </div>
+      </div>
+    <% }) %>
+  </body>
+</html>
