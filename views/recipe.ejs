@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title><%= recipe.title %></title>
+    <style>
+      body { font-family: Arial, sans-serif; max-width: 900px; margin: 40px auto; padding: 0 16px; }
+      h1 { color: #1D9E75; }
+      a { color: #1D9E75; text-decoration: none; }
+      a:hover { text-decoration: underline; }
+      .back { margin-bottom: 24px; display: block; }
+      .tag { display: inline-block; background: #E1F5EE; color: #0F6E56; padding: 2px 10px; border-radius: 20px; font-size: 12px; margin-right: 4px; }
+      .rating { color: #EF9F27; font-weight: bold; }
+      .section { margin-bottom: 20px; }
+      .section h3 { color: #333; border-bottom: 1px solid #eee; padding-bottom: 6px; }
+      table { width: 100%; border-collapse: collapse; }
+      td { padding: 6px 10px; border-bottom: 1px solid #f0f0f0; font-size: 14px; }
+      td:first-child { color: #888; width: 160px; }
+      .dietary { display: inline-block; background: #E6F1FB; color: #185FA5; padding: 2px 10px; border-radius: 20px; font-size: 12px; margin-right: 4px; }
+    </style>
+  </head>
+  <body>
+    <a class="back" href="/">← Back to all recipes</a>
+
+    <h1><%= recipe.title %></h1>
+    <p><%= recipe.description %></p>
+
+    <div class="section">
+      <h3>Details</h3>
+      <table>
+        <tr><td>Category</td><td><%= recipe.category %></td></tr>
+        <tr><td>Difficulty</td><td><%= recipe.difficulty %></td></tr>
+        <tr><td>Prep time</td><td><%= recipe.prep_time_min %> min</td></tr>
+        <tr><td>Cook time</td><td><%= recipe.cook_time_min %> min</td></tr>
+        <tr><td>Total time</td><td><%= recipe.prep_time_min + recipe.cook_time_min %> min</td></tr>
+        <tr><td>Servings</td><td><%= recipe.servings %></td></tr>
+        <tr><td>Rating</td><td><span class="rating">★ <%= recipe.rating %></span></td></tr>
+        <tr><td>Author</td><td><a href="/authors/<%= encodeURIComponent(recipe.author) %>"><%= recipe.author %></a></td></tr>
+        <tr><td>Added on</td><td><%= new Date(recipe.created_at).toLocaleDateString() %></td></tr>
+      </table>
+    </div>
+
+    <div class="section">
+      <h3>Ingredients</h3>
+      <table>
+        <% (recipe.ingredients || []).forEach((ing) => { %>
+          <tr>
+            <td><%= ing.name %></td>
+            <td><%= ing.amount %> <%= ing.unit %></td>
+          </tr>
+        <% }) %>
+      </table>
+    </div>
+
+    <div class="section">
+      <h3>Tags</h3>
+      <% (recipe.tags || []).forEach((tag) => { %>
+        <span class="tag"><%= tag %></span>
+      <% }) %>
+    </div>
+
+    <% if (recipe.dietary && recipe.dietary.length > 0) { %>
+    <div class="section">
+      <h3>Dietary</h3>
+      <% recipe.dietary.forEach((d) => { %>
+        <span class="dietary"><%= d %></span>
+      <% }) %>
+    </div>
+    <% } %>
+  </body>
+</html>
